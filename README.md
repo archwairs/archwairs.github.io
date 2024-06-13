@@ -1,3 +1,3 @@
-This is the blog that I have been thinking about making for a while now. Here it is! I hope you find something interesting.
+Hello there! Welcome to my little corner on the internet. This is a very rudimentary blog made using GitHub Pages. All the posts can be found below. I hope you find something interesting!
 
-[13-06-2024](first.md)
+[First Thoughts](first.md)
