@@ -1,3 +1,5 @@
+##  I Cried And Physics
+
 *Spoilers for Young Sheldon Season 7*
 
 I have been watching Young Sheldon while having meals for about the past 15 days. Today morning, I sat down to watch the 13th episode of the last season. I didn't know what I was in for. It is the episode in which Sheldon's father, George dies of a heart attack. I knew this was going to happen. I had seen clips of the episodes before on social media. Yet the moment the news was delivered to Mary that George has passed, it made me cry. I cried throughout the rest of the episode. Every scene was so well done. Sheldon replaying the last moments with his father and thinking of things he could have said. Mary relying a lot on religion and sort of abandoning her kids when they needed her the most. Georgie stepping up to be the man of the house. Connie crying throughout the episode. Missy lashing out because she is devastated. All of them acted so freaking well! Everything was so on point, the music, the scenes, the pacing. I have never cried like this while watching something. This is one episode of any show that I am going to remember for a long while.
