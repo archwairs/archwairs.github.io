@@ -11,14 +11,19 @@ let lastStep = 0;
 
 // ---- Initialize canvas & grid ----
 function resize() {
+  const bannerHeight = 180; // px — adjust to taste
+
   canvas.width = window.innerWidth;
-  canvas.height = canvas.offsetHeight;
+  canvas.height = bannerHeight;
 
   cols = Math.floor(canvas.width / CELL_SIZE);
   rows = Math.floor(canvas.height / CELL_SIZE);
 
+  if (rows === 0 || cols === 0) return;
+
   randomizeGrid();
 }
+
 
 function randomizeGrid() {
   // Random density per load (keeps things organic)
