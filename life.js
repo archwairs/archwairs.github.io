@@ -74,7 +74,7 @@ function step() {
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+  ctx.fillStyle = "rgba(235, 220, 200, 0.7)";
 
   for (let y = 0; y < rows; y++) {
     for (let x = 0; x < cols; x++) {
