@@ -1,3 +1,12 @@
+#life-banner {
+  display: block;
+  width: 100%;
+  height: 180px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+
+
 :root {
   --bg: #ebe8e4;
   --text: #1d1914;
