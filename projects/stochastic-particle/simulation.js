@@ -1,4 +1,4 @@
-// Simple Stochastic Simulation
+// Simple Stochastic Simulation - High Quality Version
 console.log("simulation.js loading...");
 
 // Simulation state
@@ -20,16 +20,16 @@ let params = {
 };
 
 // Canvas references
-let particleCtx;
-let msdCtx;
-let distCtx;
+let particleCanvas, particleCtx;
+let msdCanvas, msdCtx;
+let distCanvas, distCtx;
 
 // Initialize when page loads
 document.addEventListener('DOMContentLoaded', function() {
     console.log("DOM loaded, initializing...");
     
-    // Initialize canvases
-    initCanvases();
+    // Initialize canvases with high DPI
+    initHighQualityCanvases();
     
     // Initialize particles
     initParticles();
@@ -43,52 +43,71 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log("Initialization complete!");
 });
 
-function initCanvases() {
-    console.log("Initializing canvases...");
+function initHighQualityCanvases() {
+    console.log("Initializing high-quality canvases...");
     
-    // Create responsive canvases
-    createCanvasForContainer('particle-canvas', 'particle');
-    createCanvasForContainer('msd-canvas', 'msd');
-    createCanvasForContainer('distribution-canvas', 'distribution');
+    // Create high DPI canvases
+    particleCanvas = createHighDPICanvas('particle-canvas');
+    msdCanvas = createHighDPICanvas('msd-canvas');
+    distCanvas = createHighDPICanvas('distribution-canvas');
     
-    console.log("Canvases created");
+    if (particleCanvas) particleCtx = particleCanvas.ctx;
+    if (msdCanvas) msdCtx = msdCanvas.ctx;
+    if (distCanvas) distCtx = distCanvas.ctx;
+    
+    console.log("High-quality canvases created");
 }
 
-function createCanvasForContainer(containerId, type) {
+function createHighDPICanvas(containerId) {
     const container = document.getElementById(containerId);
-    if (!container) return;
+    if (!container) {
+        console.error(`Container ${containerId} not found`);
+        return null;
+    }
     
     // Get container dimensions
-    const width = container.clientWidth || 800;
+    const rect = container.getBoundingClientRect();
+    const width = Math.floor(rect.width);
     const height = 300;
+    
+    if (width <= 0 || height <= 0) {
+        console.warn(`Container ${containerId} has invalid dimensions: ${width}x${height}`);
+        return null;
+    }
+    
+    // Get device pixel ratio
+    const dpr = window.devicePixelRatio || 1;
     
     // Clear container
     container.innerHTML = '';
     
-    // Create canvas with exact pixel dimensions
+    // Create canvas
     const canvas = document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
-    canvas.style.width = '100%';
-    canvas.style.height = '100%';
+    const ctx = canvas.getContext('2d');
+    
+    // Set display size (CSS pixels)
+    canvas.style.width = width + 'px';
+    canvas.style.height = height + 'px';
     canvas.style.display = 'block';
+    
+    // Set actual size in memory (scaled for device pixel ratio)
+    canvas.width = Math.floor(width * dpr);
+    canvas.height = Math.floor(height * dpr);
+    
+    // Scale all drawing operations by dpr
+    ctx.scale(dpr, dpr);
+    
+    // Store the scale factor
+    ctx.dpr = dpr;
+    ctx.cssWidth = width;
+    ctx.cssHeight = height;
     
     // Add to container
     container.appendChild(canvas);
     
-    // Store context reference
-    const ctx = canvas.getContext('2d');
+    console.log(`${containerId}: ${width}x${height} (CSS), ${canvas.width}x${canvas.height} (actual), DPR: ${dpr}`);
     
-    if (type === 'particle') {
-        particleCtx = ctx;
-        console.log(`Particle canvas: ${width}x${height}`);
-    } else if (type === 'msd') {
-        msdCtx = ctx;
-        console.log(`MSD canvas: ${width}x${height}`);
-    } else if (type === 'distribution') {
-        distCtx = ctx;
-        console.log(`Distribution canvas: ${width}x${height}`);
-    }
+    return { canvas, ctx, dpr, cssWidth: width, cssHeight: height };
 }
 
 // Handle window resize
@@ -97,7 +116,7 @@ window.addEventListener('resize', function() {
     clearTimeout(resizeTimeout);
     resizeTimeout = setTimeout(function() {
         console.log("Window resized, recreating canvases...");
-        initCanvases();
+        initHighQualityCanvases();
         // Redraw immediately
         drawEverything();
     }, 250);
@@ -196,95 +215,135 @@ function drawEverything() {
 function drawParticles() {
     if (!particleCtx) return;
     
-    const canvas = particleCtx.canvas;
-    const width = canvas.width;
-    const height = canvas.height;
+    const ctx = particleCtx;
+    const width = ctx.cssWidth;
+    const height = ctx.cssHeight;
     const centerX = width / 2;
-    const scale = width / 40; // Dynamic scaling based on canvas width
+    const scale = width / 40;
     
-    // Clear
-    particleCtx.fillStyle = '#ebe8e4';
-    particleCtx.fillRect(0, 0, width, height);
+    // Clear with exact dimensions
+    ctx.clearRect(0, 0, width, height);
+    ctx.fillStyle = '#ebe8e4';
+    ctx.fillRect(0, 0, width, height);
     
     // Draw center line
-    particleCtx.strokeStyle = 'rgba(111, 76, 53, 0.4)';
-    particleCtx.lineWidth = 1;
-    particleCtx.beginPath();
-    particleCtx.moveTo(centerX, 0);
-    particleCtx.lineTo(centerX, height);
-    particleCtx.stroke();
+    ctx.strokeStyle = 'rgba(111, 76, 53, 0.4)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(centerX, 0);
+    ctx.lineTo(centerX, height);
+    ctx.stroke();
     
     // Draw x-axis
-    particleCtx.strokeStyle = 'rgba(111, 76, 53, 0.2)';
-    particleCtx.beginPath();
-    particleCtx.moveTo(50, height/2);
-    particleCtx.lineTo(width - 50, height/2);
-    particleCtx.stroke();
+    ctx.strokeStyle = 'rgba(111, 76, 53, 0.2)';
+    ctx.beginPath();
+    ctx.moveTo(30, height/2);
+    ctx.lineTo(width - 30, height/2);
+    ctx.stroke();
     
     // Draw particles
     const step = Math.max(1, Math.floor(params.N / 200));
+    
+    // Pre-calculate colors for better performance
     for (let i = 0; i < particles.length; i += step) {
         const p = particles[i];
         const x = centerX + p.x * scale;
         
-        // Brown color based on position
-        const brownIntensity = 150 - Math.abs(p.x) * 5;
-        particleCtx.fillStyle = `rgb(111, ${Math.min(60, 20 + Math.abs(p.x) * 3)}, ${brownIntensity})`;
+        // Brown color based on position - using HSL for better control
+        const hue = 25; // Brown base hue
+        const saturation = 40 + Math.abs(p.x) * 2;
+        const lightness = 50 - Math.abs(p.x) * 1;
         
-        particleCtx.beginPath();
-        particleCtx.arc(x, height/2, 2, 0, Math.PI * 2);
-        particleCtx.fill();
+        ctx.fillStyle = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+        
+        ctx.beginPath();
+        ctx.arc(x, height/2, 3, 0, Math.PI * 2);
+        ctx.fill();
     }
     
     // Draw labels
-    particleCtx.fillStyle = '#1d1914';
-    particleCtx.font = '12px system-ui';
-    particleCtx.textAlign = 'center';
+    ctx.fillStyle = '#1d1914';
+    ctx.font = '14px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
     
     // Position markers
-    [-15, -10, -5, 0, 5, 10, 15].forEach(pos => {
+    const positions = [-15, -10, -5, 0, 5, 10, 15];
+    positions.forEach(pos => {
         const x = centerX + pos * scale;
-        particleCtx.fillText(pos, x, height/2 + 20);
+        ctx.fillText(pos.toString(), x, height/2 + 25);
     });
     
-    particleCtx.fillText('Position (x)', width / 2, height - 10);
+    // Axis label
+    ctx.fillText('Position (x)', width / 2, height - 15);
+    
+    // Draw time indicator
+    ctx.fillStyle = 'rgba(111, 76, 53, 0.7)';
+    ctx.font = '12px system-ui, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(`Time: ${time.toFixed(1)}`, 10, 20);
 }
 
 function drawMSD() {
     if (!msdCtx || msdData.length < 2) return;
     
-    const canvas = msdCtx.canvas;
-    const width = canvas.width;
-    const height = canvas.height;
-    const padding = Math.max(30, width * 0.05); // Responsive padding
+    const ctx = msdCtx;
+    const width = ctx.cssWidth;
+    const height = ctx.cssHeight;
+    const padding = Math.max(40, width * 0.05);
     const plotWidth = width - 2 * padding;
     const plotHeight = height - 2 * padding;
     const maxTime = Math.max(time, 1);
     
     // Clear
-    msdCtx.fillStyle = '#ebe8e4';
-    msdCtx.fillRect(0, 0, width, height);
+    ctx.clearRect(0, 0, width, height);
+    ctx.fillStyle = '#ebe8e4';
+    ctx.fillRect(0, 0, width, height);
+    
+    // Draw grid
+    ctx.strokeStyle = 'rgba(111, 76, 53, 0.1)';
+    ctx.lineWidth = 0.5;
+    
+    // Vertical grid lines
+    for (let i = 1; i < 5; i++) {
+        const x = padding + (plotWidth * i) / 5;
+        ctx.beginPath();
+        ctx.moveTo(x, padding);
+        ctx.lineTo(x, height - padding);
+        ctx.stroke();
+    }
+    
+    // Horizontal grid lines
+    for (let i = 1; i < 5; i++) {
+        const y = height - padding - (plotHeight * i) / 5;
+        ctx.beginPath();
+        ctx.moveTo(padding, y);
+        ctx.lineTo(width - padding, y);
+        ctx.stroke();
+    }
     
     // Draw axes
-    msdCtx.strokeStyle = 'rgba(111, 76, 53, 0.6)';
-    msdCtx.lineWidth = 1;
+    ctx.strokeStyle = 'rgba(111, 76, 53, 0.6)';
+    ctx.lineWidth = 1.5;
     
     // X-axis
-    msdCtx.beginPath();
-    msdCtx.moveTo(padding, height - padding);
-    msdCtx.lineTo(width - padding, height - padding);
-    msdCtx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(padding, height - padding);
+    ctx.lineTo(width - padding, height - padding);
+    ctx.stroke();
     
     // Y-axis
-    msdCtx.beginPath();
-    msdCtx.moveTo(padding, padding);
-    msdCtx.lineTo(padding, height - padding);
-    msdCtx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(padding, padding);
+    ctx.lineTo(padding, height - padding);
+    ctx.stroke();
     
-    // Draw MSD curve
-    msdCtx.strokeStyle = '#6f4c35';
-    msdCtx.lineWidth = 2;
-    msdCtx.beginPath();
+    // Draw MSD curve with smooth line
+    ctx.strokeStyle = '#6f4c35';
+    ctx.lineWidth = 2.5;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.beginPath();
     
     for (let i = 0; i < msdData.length; i++) {
         const data = msdData[i];
@@ -292,13 +351,23 @@ function drawMSD() {
         const y = height - padding - (data.msd / maxMSD) * plotHeight;
         
         if (i === 0) {
-            msdCtx.moveTo(x, y);
+            ctx.moveTo(x, y);
         } else {
-            msdCtx.lineTo(x, y);
+            // Smooth curve
+            const prevData = msdData[i-1];
+            const prevX = padding + (prevData.time / maxTime) * plotWidth;
+            const prevY = height - padding - (prevData.msd / maxMSD) * plotHeight;
+            
+            const cpX1 = prevX + (x - prevX) * 0.5;
+            const cpY1 = prevY;
+            const cpX2 = cpX1;
+            const cpY2 = y;
+            
+            ctx.bezierCurveTo(cpX1, cpY1, cpX2, cpY2, x, y);
         }
     }
     
-    msdCtx.stroke();
+    ctx.stroke();
     
     // Draw current point
     if (msdData.length > 0) {
@@ -306,42 +375,69 @@ function drawMSD() {
         const currentX = padding + (last.time / maxTime) * plotWidth;
         const currentY = height - padding - (last.msd / maxMSD) * plotHeight;
         
-        msdCtx.fillStyle = '#6f4c35';
-        msdCtx.beginPath();
-        msdCtx.arc(currentX, currentY, 6, 0, Math.PI * 2);
-        msdCtx.fill();
+        // Glow effect
+        ctx.shadowColor = 'rgba(111, 76, 53, 0.5)';
+        ctx.shadowBlur = 8;
+        ctx.fillStyle = '#6f4c35';
+        ctx.beginPath();
+        ctx.arc(currentX, currentY, 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        
+        // Inner point
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(currentX, currentY, 3, 0, Math.PI * 2);
+        ctx.fill();
     }
     
-    // Draw labels
-    msdCtx.fillStyle = '#1d1914';
-    msdCtx.font = '11px system-ui';
-    msdCtx.textAlign = 'center';
+    // Draw axis labels
+    ctx.fillStyle = '#1d1914';
+    ctx.font = '13px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
     
-    // Time labels
+    // X-axis labels (time)
     for (let i = 0; i <= 5; i++) {
         const x = padding + (plotWidth * i) / 5;
         const timeValue = (maxTime * i) / 5;
-        msdCtx.fillText(timeValue.toFixed(1), x, height - padding + 20);
+        ctx.fillText(timeValue.toFixed(1), x, height - padding + 8);
     }
     
-    msdCtx.fillText('Time', width / 2, height - 10);
+    // X-axis title
+    ctx.fillText('Time', width / 2, height - padding + 25);
     
-    // MSD labels
-    msdCtx.textAlign = 'right';
+    // Y-axis labels (MSD)
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
     for (let i = 0; i <= 5; i++) {
         const y = height - padding - (plotHeight * i) / 5;
         const msdValue = (maxMSD * i) / 5;
-        msdCtx.fillText(msdValue.toFixed(1), padding - 8, y + 4);
+        ctx.fillText(msdValue.toFixed(1), padding - 10, y);
     }
+    
+    // Y-axis title
+    ctx.save();
+    ctx.translate(15, height / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.textAlign = 'center';
+    ctx.fillText('MSD', 0, 0);
+    ctx.restore();
+    
+    // Title
+    ctx.fillStyle = 'rgba(111, 76, 53, 0.8)';
+    ctx.font = 'bold 14px system-ui, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('Mean-Squared Displacement', padding, padding - 5);
 }
 
 function drawDistribution() {
     if (!distCtx) return;
     
-    const canvas = distCtx.canvas;
-    const width = canvas.width;
-    const height = canvas.height;
-    const padding = Math.max(30, width * 0.05);
+    const ctx = distCtx;
+    const width = ctx.cssWidth;
+    const height = ctx.cssHeight;
+    const padding = Math.max(40, width * 0.05);
     const plotWidth = width - 2 * padding;
     const plotHeight = height - 2 * padding;
     
@@ -361,28 +457,29 @@ function drawDistribution() {
     const densityScale = params.N * binWidth;
     
     // Clear
-    distCtx.fillStyle = '#ebe8e4';
-    distCtx.fillRect(0, 0, width, height);
+    ctx.clearRect(0, 0, width, height);
+    ctx.fillStyle = '#ebe8e4';
+    ctx.fillRect(0, 0, width, height);
     
     // Draw axes
-    distCtx.strokeStyle = 'rgba(111, 76, 53, 0.6)';
-    distCtx.lineWidth = 1;
+    ctx.strokeStyle = 'rgba(111, 76, 53, 0.6)';
+    ctx.lineWidth = 1.5;
     
     // X-axis
-    distCtx.beginPath();
-    distCtx.moveTo(padding, height - padding);
-    distCtx.lineTo(width - padding, height - padding);
-    distCtx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(padding, height - padding);
+    ctx.lineTo(width - padding, height - padding);
+    ctx.stroke();
     
     // Y-axis
-    distCtx.beginPath();
-    distCtx.moveTo(padding, padding);
-    distCtx.lineTo(padding, height - padding);
-    distCtx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(padding, padding);
+    ctx.lineTo(padding, height - padding);
+    ctx.stroke();
     
-    // Draw bars
-    const barWidth = plotWidth / bins;
-    distCtx.fillStyle = 'rgba(111, 76, 53, 0.7)';
+    // Draw bars with gradient
+    const barSpacing = 1;
+    const barPlotWidth = plotWidth / bins;
     
     for (let i = 0; i < bins; i++) {
         const x = -15 + (i + 0.5) * binWidth;
@@ -391,29 +488,109 @@ function drawDistribution() {
         const xPos = padding + ((x + 15) / 30) * plotWidth;
         const barHeight = (d / maxDensity) * plotHeight * 0.8;
         
-        distCtx.fillRect(xPos - barWidth/2, height - padding - barHeight, barWidth, barHeight);
+        // Create gradient for bar
+        const gradient = ctx.createLinearGradient(0, height - padding - barHeight, 0, height - padding);
+        gradient.addColorStop(0, 'rgba(111, 76, 53, 0.9)');
+        gradient.addColorStop(1, 'rgba(111, 76, 53, 0.5)');
+        
+        ctx.fillStyle = gradient;
+        ctx.fillRect(
+            xPos - barPlotWidth/2 + barSpacing/2, 
+            height - padding - barHeight, 
+            barPlotWidth - barSpacing, 
+            barHeight
+        );
+        
+        // Add subtle border
+        ctx.strokeStyle = 'rgba(111, 76, 53, 0.3)';
+        ctx.lineWidth = 0.5;
+        ctx.strokeRect(
+            xPos - barPlotWidth/2 + barSpacing/2, 
+            height - padding - barHeight, 
+            barPlotWidth - barSpacing, 
+            barHeight
+        );
     }
     
-    // Draw labels
-    distCtx.fillStyle = '#1d1914';
-    distCtx.font = '11px system-ui';
-    distCtx.textAlign = 'center';
+    // Draw theoretical equilibrium distribution line
+    ctx.strokeStyle = 'rgba(180, 60, 60, 0.8)';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([5, 3]);
+    ctx.beginPath();
     
-    // X labels
-    [-15, -10, -5, 0, 5, 10, 15].forEach(pos => {
+    const alpha = params.alpha;
+    const gamma = params.gamma;
+    const D = params.D;
+    const equilibriumMax = (alpha / (2 * gamma * D));
+    
+    for (let x = -14.5; x <= 14.5; x += 0.5) {
+        const y = (alpha / (2 * gamma * D)) * Math.exp(-alpha * Math.abs(x) / (gamma * D));
+        const xPos = padding + ((x + 15) / 30) * plotWidth;
+        const yPos = height - padding - (y / equilibriumMax) * plotHeight * 0.8;
+        
+        if (x === -14.5) {
+            ctx.moveTo(xPos, yPos);
+        } else {
+            ctx.lineTo(xPos, yPos);
+        }
+    }
+    
+    ctx.stroke();
+    ctx.setLineDash([]);
+    
+    // Draw axis labels
+    ctx.fillStyle = '#1d1914';
+    ctx.font = '13px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    
+    // X-axis labels
+    const positions = [-15, -10, -5, 0, 5, 10, 15];
+    positions.forEach(pos => {
         const xPos = padding + ((pos + 15) / 30) * plotWidth;
-        distCtx.fillText(pos, xPos, height - padding + 20);
+        ctx.fillText(pos.toString(), xPos, height - padding + 8);
     });
     
-    distCtx.fillText('Position (x)', width / 2, height - 10);
+    // X-axis title
+    ctx.fillText('Position (x)', width / 2, height - padding + 25);
     
-    // Y labels
-    distCtx.textAlign = 'right';
+    // Y-axis labels
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
     for (let i = 0; i <= 5; i++) {
         const y = height - padding - (plotHeight * i) / 5;
         const densityValue = (maxDensity * i) / 5 / densityScale;
-        distCtx.fillText(densityValue.toFixed(2), padding - 8, y + 4);
+        ctx.fillText(densityValue.toFixed(2), padding - 10, y);
     }
+    
+    // Y-axis title
+    ctx.save();
+    ctx.translate(15, height / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.textAlign = 'center';
+    ctx.fillText('Probability Density', 0, 0);
+    ctx.restore();
+    
+    // Title and legend
+    ctx.fillStyle = 'rgba(111, 76, 53, 0.8)';
+    ctx.font = 'bold 14px system-ui, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('Probability Distribution', padding, padding - 5);
+    
+    // Legend for equilibrium line
+    ctx.fillStyle = 'rgba(180, 60, 60, 0.8)';
+    ctx.font = '11px system-ui, sans-serif';
+    ctx.fillText('Equilibrium distribution', width - 180, padding + 20);
+    
+    // Draw legend line
+    ctx.strokeStyle = 'rgba(180, 60, 60, 0.8)';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([5, 3]);
+    ctx.beginPath();
+    ctx.moveTo(width - 185, padding + 20);
+    ctx.lineTo(width - 155, padding + 20);
+    ctx.stroke();
+    ctx.setLineDash([]);
 }
 
 function gaussianRandom() {
