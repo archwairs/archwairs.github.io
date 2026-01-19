@@ -8,27 +8,31 @@
 </head>
 <body>
 
-<h1>Stochastic particle with sign-dependent drift</h1>
+<main>
 
-<p>
-This is an interactive visualization of a stochastic particle evolving under
-a deterministic drift proportional to <code>sign(x)</code> and additive thermal noise.
-</p>
+  <h1>Stochastic particle with sign-dependent drift</h1>
 
-<p>
-The model was originally implemented in Python as part of a numerical study
-of stochastic dynamics, and later adapted to JavaScript for real-time visualization
-on the web.
-</p>
+  <p>
+    This is an interactive visualization of a stochastic particle evolving under
+    a deterministic drift proportional to <code>sign(x)</code> and additive thermal noise.
+  </p>
 
-<canvas id="canvas" width="600" height="200"></canvas>
+  <p>
+    The model was originally implemented in Python as part of a numerical study
+    of stochastic dynamics, and later adapted to JavaScript for real-time visualization
+    on the web.
+  </p>
 
-<script src="simulation.js"></script>
-<script src="visualize.js"></script>
+  <canvas id="canvas" width="600" height="200"></canvas>
 
-<p class="note">
-The simulation uses Euler–Maruyama integration and Gaussian noise.
-</p>
+  <script src="simulation.js"></script>
+  <script src="visualize.js"></script>
+
+  <p class="note">
+    The simulation uses Euler–Maruyama integration and Gaussian noise.
+  </p>
+
+</main>
 
 </body>
 </html>
