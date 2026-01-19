@@ -1,38 +1,255 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Stochastic Particle</title>
-  <link rel="stylesheet" href="../../style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Relaxation Dynamics in a Confining Potential</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Load MathJax first -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 <body>
-
 <main>
+    <header>
+        <h1>Relaxation Dynamics in a Confining Potential</h1>
+        <p class="subtitle">Numerical and analytical study of stochastic particle motion with dry friction</p>
+    </header>
 
-  <h1>Stochastic particle with sign-dependent drift</h1>
 
-  <p>
-    This is an interactive visualization of a stochastic particle evolving under
-    a deterministic drift proportional to <code>sign(x)</code> and additive thermal noise.
-  </p>
 
-  <p>
-    The model was originally implemented in Python as part of a numerical study
-    of stochastic dynamics, and later adapted to JavaScript for real-time visualization
-    on the web.
-  </p>
+    <!-- Introduction -->
+    <section class="content-section">
+        <h2>1. Introduction</h2>
+        <p>Stochastic models of particle motion provide powerful frameworks for understanding transport processes in physics, chemistry, and biology. Among them, the random walk and its continuous counterpart, the diffusion process, form the basis for a wide range of phenomena; from molecular diffusion to active matter dynamics.</p>
 
-  <canvas id="canvas"></canvas>
+        <p>In this project, we study a biased random walk in one dimension where, at every timestep, the particle moves either left or right with probabilities that depend on an external bias. The bias is chosen such that the particle has a higher probability of moving toward the origin, effectively creating a restoring tendency. We explore how this bias and the initial position of the particle influence the time evolution of the mean-squared displacement.</p>
 
-  <script src="simulation.js"></script>
-  <script src="visualize.js"></script>
+        <p>Numerical simulations reveal an interesting non-monotonic behavior of the MSD: it initially increases, reaches a maximum (a peak), and then decreases as the particle relaxes toward the origin. The time and height of this MSD peak depend systematically on the model parameters: a stronger inward bias causes the particle to reach the origin faster, leading to an earlier and smaller peak, while starting farther from the origin delays the peak and increases its magnitude.</p>
+    </section>
 
-  <p class="note">
-    The simulation uses Euler–Maruyama integration and Gaussian noise.
-  </p>
+    <!-- Model Description -->
+    <section class="content-section">
+        <h2>2. Model</h2>
+        <div class="theory-box">
+            <p>We consider a one-dimensional biased random walker moving in a linear confining potential:</p>
+            <div class="equation">
+                \[V(x) = \alpha |x|\]
+            </div>
+            <p>which generates an effective drift toward the origin. The corresponding Langevin equation in the viscous limit is given by:</p>
+            <div class="equation">
+                \[\gamma \dot{x} = -\frac{dV}{dx} + f(t) \Longrightarrow \gamma \dot{x} = -\alpha\,\mathrm{sgn}(x) + f(t)\]
+            </div>
+            <p>where \(f(t)\) is the noise term with the following properties:</p>
+            <div class="equation">
+                \[\langle f(t)\rangle = 0 \quad \text{and} \quad \langle f(t_1)f(t_2)\rangle = 2D\gamma^2\delta(t_1 - t_2)\]
+            </div>
+        </div>
+    </section>
 
+
+
+    <!-- Simulation Details -->
+    <section class="content-section">
+        <h2>3. Simulation Methodology</h2>
+        <div class="theory-box">
+            <p>We simulate this model by numerically integrating the Langevin equation using the Euler–Maruyama method. From equations (2) and (7) in the PDF, we write:</p>
+            <div class="equation">
+                \[\dot{x} = -\frac{\alpha}{\gamma}\mathrm{sgn}(x) + \sqrt{2D}\,\xi(t)\]
+            </div>
+            <p>Integrating over the interval \([t, t + \Delta t]\) gives the discretized update rule:</p>
+            <div class="equation">
+                \[x(t + \Delta t) - x(t) = -\frac{\alpha}{\gamma}\mathrm{sgn}\big(x(t)\big)\Delta t + \sqrt{2D\Delta t}\,\eta_n\]
+            </div>
+            <p>where \(\eta_n \sim \mathcal{N}(0,1)\) is a standard Gaussian random variable. This Euler–Maruyama scheme is implemented in the interactive simulation below.</p>
+        </div>
+    </section>
+
+
+
+    <!-- Interactive Simulation -->
+    <section class="sim-section">
+        <h2>4. Interactive Simulation</h2>
+        <p>Adjust parameters to observe how the confining strength \(\alpha\), friction \(\gamma\), and initial position \(x_0\) affect the relaxation dynamics.</p>
+
+        <div id="particle-canvas" class="canvas-container"></div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label>
+                    <span class="label-text">Number of particles \(N\):</span>
+                    <span class="value" id="N-value">500</span>
+                </label>
+                <input type="range" id="N-slider" min="100" max="2000" step="100" value="500">
+            </div>
+
+            <div class="control-group">
+                <label>
+                    <span class="label-text">Initial position \(x_0\):</span>
+                    <span class="value" id="x0-value">10.0</span>
+                </label>
+                <input type="range" id="x0-slider" min="0" max="20" step="0.5" value="10.0">
+            </div>
+
+            <div class="control-group">
+                <label>
+                    <span class="label-text">Confining strength \(\alpha\):</span>
+                    <span class="value" id="alpha-value">1.0</span>
+                </label>
+                <input type="range" id="alpha-slider" min="0.1" max="3" step="0.1" value="1.0">
+            </div>
+
+            <div class="control-group">
+                <label>
+                    <span class="label-text">Friction coefficient \(\gamma\):</span>
+                    <span class="value" id="gamma-value">1.0</span>
+                </label>
+                <input type="range" id="gamma-slider" min="0.1" max="3" step="0.1" value="1.0">
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-value" id="time-value">0.0</div>
+                <div class="stat-label">Time</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="mean-x-value">10.0</div>
+                <div class="stat-label">Mean x</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="variance-value">0.0</div>
+                <div class="stat-label">Variance</div>
+            </div>
+        </div>
+
+        <div class="buttons">
+            <button id="reset-btn" class="btn">Reset Simulation</button>
+            <button id="pause-btn" class="btn btn-secondary">Pause</button>
+        </div>
+    </section>
+
+
+
+    <!-- MSD Analysis -->
+    <section class="sim-section">
+        <h2>5. Mean-Squared Displacement Analysis</h2>
+        <p>The MSD shows characteristic non-monotonic behavior: diffusion initially increases the spread, but the confining potential eventually pulls particles back toward the origin, causing the MSD to peak and then decay. This behavior illustrates the interplay between drift toward the origin and diffusive spreading.</p>
+
+        <div id="msd-canvas" class="canvas-container"></div>
+
+        <div class="plot-stats">
+            <div class="stat-item">
+                <div class="stat-value" id="max-msd-value">0.0</div>
+                <div class="stat-label">Peak MSD</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="peak-time-value">0.0</div>
+                <div class="stat-label">Time at Peak</div>
+            </div>
+        </div>
+
+        <div class="observation">
+            <h3>Observation:</h3>
+            <p>Stronger confinement (larger \(\alpha\)) causes earlier MSD peaks, while larger friction \(\gamma\) affects the peak height. Starting farther from the origin increases both the peak time and magnitude, reflecting greater initial spreading before drift dominates.</p>
+        </div>
+    </section>
+
+
+
+    <!-- Distribution Analysis -->
+    <section class="sim-section">
+        <h2>6. Probability Density Evolution</h2>
+        <p>The probability density evolves from a delta-like peak at the initial position toward the equilibrium distribution. The theoretical equilibrium distribution for this system is:</p>
+
+        <div class="theory-box">
+            <div class="equation">
+                \[P_{\mathrm{eq}}(x) = \frac{\alpha}{2\gamma D} e^{-\alpha|x|/\gamma D}\]
+            </div>
+            <p>This exponential distribution reflects the balance between the confining potential and thermal noise.</p>
+        </div>
+
+        <div id="distribution-canvas" class="canvas-container"></div>
+
+        <div class="observation">
+            <h3>Key Features:</h3>
+            <ul>
+                <li>Initial concentration at \(x = x_0\)</li>
+                <li>Gradual spreading due to diffusion</li>
+                <li>Asymmetric relaxation toward the origin</li>
+                <li>Convergence to exponential equilibrium distribution</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- Results and Discussion -->
+    <section class="content-section">
+        <h2>7. Results and Discussion</h2>
+
+        <div class="results">
+            <h3>Key Findings:</h3>
+            <ol>
+                <li><strong>Non-monotonic MSD</strong>: The mean-squared displacement exhibits a characteristic peak before decaying to its equilibrium value, demonstrating the competition between diffusion and drift.</li>
+
+                <li><strong>Parameter Dependence</strong>:
+                    <ul>
+                        <li>Larger \(\alpha\) (stronger confinement) → earlier and smaller MSD peak</li>
+                        <li>Larger initial \(x_0\) → delayed and larger MSD peak</li>
+                        <li>Friction \(\gamma\) modulates the relaxation timescale</li>
+                    </ul>
+                </li>
+
+                <li><strong>Probability Density Evolution</strong>: The distribution evolves from an initial delta function to an exponential equilibrium distribution.</li>
+            </ol>
+        </div>
+    </section>
+
+
+    <!-- References and Acknowledgments -->
+    <section class="content-section">
+        <h2>8. References & Acknowledgments</h2>
+
+        <div class="references">
+            <h3>References</h3>
+            <ol>
+                <li>Risken, H. (1989). <em>The Fokker-Planck Equation: Methods of Solution and Applications</em>. Springer-Verlag, Berlin.</li>
+                <li>Tong, D. (2012). <em>Kinetic Theory</em>. Lecture notes, University of Cambridge.</li>
+                <li>Gardiner, C. W. (2009). <em>Stochastic Methods: A Handbook for the Natural and Social Sciences</em>. Springer.</li>
+            </ol>
+        </div>
+    </section>
+
+    <footer>
+        <p class="note">Simulation uses Euler–Maruyama integration with \(\Delta t = 0.01\) and \(D = 1.0\).</p>
+    </footer>
 </main>
 
+<!-- Load p5.js AFTER the content -->
+<script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+<script src="simulation.js"></script>
+
+<script>
+    // Configure MathJax properly
+    window.MathJax = {
+        tex: {
+            inlineMath: [['$', '$'], ['\\(', '\\)']],
+            displayMath: [['$$', '$$'], ['\\[', '\\]']],
+            processEscapes: true,
+            packages: {'[+]': ['physics']}
+        },
+        loader: {load: ['[tex]/physics']},
+        options: {
+            skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+        },
+        startup: {
+            ready: () => {
+                console.log("MathJax is ready!");
+                MathJax.startup.defaultReady();
+                // Re-render after content loads
+                setTimeout(() => MathJax.typesetPromise(), 500);
+            }
+        }
+    };
+</script>
 </body>
 </html>
