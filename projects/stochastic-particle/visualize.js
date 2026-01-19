@@ -1,11 +1,8 @@
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
-let W, H;
-let scale;
-let particleR;
+let W, H, scale, particleR;
 
-// Resize & mapping
 function resize() {
   W = canvas.clientWidth;
   H = canvas.clientHeight;
@@ -13,48 +10,54 @@ function resize() {
   canvas.width = W;
   canvas.height = H;
 
-  // Physical window depends on screen
   XMAX = 10;
   scale = W / (2 * XMAX);
-
   particleR = Math.max(6, H * 0.08);
 
-  // Reset particle to right edge
   x = XMAX;
 }
 
 window.addEventListener("resize", resize);
 resize();
 
-// Rendering
+// Click / touch
+canvas.addEventListener("pointerdown", e => {
+  const rect = canvas.getBoundingClientRect();
+  resetAt(e.clientX - rect.left, rect.width);
+});
+
+// Sliders
+const alphaSlider = document.getElementById("alpha");
+const DSlider = document.getElementById("D");
+
+alphaSlider.oninput = e => {
+  alpha = parseFloat(e.target.value);
+  document.getElementById("alphaVal").textContent = alpha.toFixed(1);
+};
+
+DSlider.oninput = e => {
+  D = parseFloat(e.target.value);
+  document.getElementById("DVal").textContent = D.toFixed(2);
+};
+
 function draw() {
-  ctx.clearRect(0, 0, W, H);
+  // Fade instead of clear → smooth
+  ctx.fillStyle = "rgba(235,232,228,0.15)";
+  ctx.fillRect(0, 0, W, H);
 
   const cx = W / 2;
   const cy = H / 2;
 
-  // Axis
-  ctx.strokeStyle = "#6f685f";
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(0, cy);
-  ctx.lineTo(W, cy);
-  ctx.stroke();
-
-  // Particle
   const px = cx + x * scale;
 
-  ctx.fillStyle = "#d9a441";
+  ctx.fillStyle = "#6f4c35";
   ctx.beginPath();
   ctx.arc(px, cy, particleR, 0, Math.PI * 2);
   ctx.fill();
 }
 
-// Animation loop
 function animate() {
-  // Many small steps → smooth
-  for (let i = 0; i < 20; i++) step();
-
+  for (let i = 0; i < 15; i++) step();
   draw();
   requestAnimationFrame(animate);
 }
