@@ -1,14 +1,15 @@
 // Physical parameters
-const alpha = 1.0;
+const alpha = 2.0;
 const gamma = 1.0;
-const D = 1.0;
-const dt = 0.005;
+const D = 0.6;
 
-// Physical domain (set by visualization)
-let X_MAX = 15;
+const dt = 0.002;
+
+// Physical domain
+let XMAX = 10;
 
 // Start at right edge
-let x = X_MAX;
+let x = XMAX;
 
 // Gaussian noise
 function randn() {
