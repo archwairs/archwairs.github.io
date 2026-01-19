@@ -45,35 +45,83 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function initCanvases() {
     console.log("Initializing canvases...");
-
+    
+    // Create canvases with device pixel ratio
+    const dpr = window.devicePixelRatio || 1;
+    
     // Particle canvas
-    const particleCanvas = document.createElement('canvas');
-    particleCanvas.width = 800;
-    particleCanvas.height = 300;
-    particleCanvas.style.width = '100%';
-    particleCanvas.style.height = '100%';
-    document.getElementById('particle-canvas').appendChild(particleCanvas);
-    particleCtx = particleCanvas.getContext('2d');
-
+    const particleContainer = document.getElementById('particle-canvas');
+    createHighDPICanvas(particleContainer, dpr, 'particle');
+    
     // MSD canvas
-    const msdCanvas = document.createElement('canvas');
-    msdCanvas.width = 800;
-    msdCanvas.height = 300;
-    msdCanvas.style.width = '100%';
-    msdCanvas.style.height = '100%';
-    document.getElementById('msd-canvas').appendChild(msdCanvas);
-    msdCtx = msdCanvas.getContext('2d');
-
+    const msdContainer = document.getElementById('msd-canvas');
+    createHighDPICanvas(msdContainer, dpr, 'msd');
+    
     // Distribution canvas
-    const distCanvas = document.createElement('canvas');
-    distCanvas.width = 800;
-    distCanvas.height = 300;
-    distCanvas.style.width = '100%';
-    distCanvas.style.height = '100%';
-    document.getElementById('distribution-canvas').appendChild(distCanvas);
-    distCtx = distCanvas.getContext('2d');
-
+    const distContainer = document.getElementById('distribution-canvas');
+    createHighDPICanvas(distContainer, dpr, 'distribution');
+    
     console.log("Canvases created");
+}
+
+function createHighDPICanvas(container, dpr, type) {
+    if (!container) return;
+    
+    // Get container size
+    const rect = container.getBoundingClientRect();
+    const width = rect.width;
+    const height = 300;
+    
+    // Create canvas
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Set display size (css pixels)
+    canvas.style.width = width + 'px';
+    canvas.style.height = height + 'px';
+    
+    // Set actual size in memory (scaled for device)
+    canvas.width = Math.floor(width * dpr);
+    canvas.height = Math.floor(height * dpr);
+    
+    // Scale all drawing operations
+    ctx.scale(dpr, dpr);
+    
+    // Clear and add
+    container.innerHTML = '';
+    container.appendChild(canvas);
+    
+    // Store reference
+    if (type === 'particle') {
+        particleCtx = ctx;
+        particleCtx.canvas.styleWidth = width;
+        particleCtx.canvas.styleHeight = height;
+    } else if (type === 'msd') {
+        msdCtx = ctx;
+        msdCtx.canvas.styleWidth = width;
+        msdCtx.canvas.styleHeight = height;
+    } else if (type === 'distribution') {
+        distCtx = ctx;
+        distCtx.canvas.styleWidth = width;
+        distCtx.canvas.styleHeight = height;
+    }
+}
+
+// Update drawing functions to use style dimensions
+function drawParticles() {
+    if (!particleCtx) return;
+    
+    const width = particleCtx.canvas.styleWidth;
+    const height = particleCtx.canvas.styleHeight;
+    const centerX = width / 2;
+    const scale = width / 40;
+    
+    // Clear with exact dimensions
+    particleCtx.clearRect(0, 0, width, height);
+    particleCtx.fillStyle = '#ebe8e4';
+    particleCtx.fillRect(0, 0, width, height);
+    
+    // Rest of drawing code using width/height...
 }
 
 function initParticles() {
