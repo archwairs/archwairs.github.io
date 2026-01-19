@@ -1,23 +1,41 @@
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
-const centerY = canvas.height / 2;
-const centerX = canvas.width / 2;
+let width, height;
+let scale; // physical units → pixels
+
+function resize() {
+  width = canvas.clientWidth || window.innerWidth - 48;
+  height = 200;
+
+  canvas.width = width;
+  canvas.height = height;
+
+  scale = width / 20; // show x in [-10, 10]
+}
+
+window.addEventListener("resize", resize);
+resize();
 
 function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0, 0, width, height);
+
+  const centerX = width / 2;
+  const centerY = height / 2;
 
   // axis
-  ctx.strokeStyle = "#555";
+  ctx.strokeStyle = "#6f685f";
   ctx.beginPath();
   ctx.moveTo(0, centerY);
-  ctx.lineTo(canvas.width, centerY);
+  ctx.lineTo(width, centerY);
   ctx.stroke();
 
   // particle
-  ctx.fillStyle = "#f4b183";
+  const px = centerX + x * scale;
+
+  ctx.fillStyle = "#6f4c35";
   ctx.beginPath();
-  ctx.arc(centerX + x, centerY, 6, 0, 2 * Math.PI);
+  ctx.arc(px, centerY, 6, 0, 2 * Math.PI);
   ctx.fill();
 }
 
