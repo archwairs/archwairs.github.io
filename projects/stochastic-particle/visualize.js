@@ -1,8 +1,11 @@
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
-let width, height;
-let scale; // physical units → pixels
+// Visible physical window
+const X_MAX = 15;
+
+// Rendering state
+let width, height, scale;
 
 function resize() {
   width = canvas.clientWidth || window.innerWidth - 48;
@@ -11,7 +14,7 @@ function resize() {
   canvas.width = width;
   canvas.height = height;
 
-  scale = width / 20; // show x in [-10, 10]
+  scale = width / (2 * X_MAX);
 }
 
 window.addEventListener("resize", resize);
@@ -20,27 +23,33 @@ resize();
 function draw() {
   ctx.clearRect(0, 0, width, height);
 
-  const centerX = width / 2;
-  const centerY = height / 2;
+  const cx = width / 2;
+  const cy = height / 2;
 
-  // axis
+  // Axis
   ctx.strokeStyle = "#6f685f";
   ctx.beginPath();
-  ctx.moveTo(0, centerY);
-  ctx.lineTo(width, centerY);
+  ctx.moveTo(0, cy);
+  ctx.lineTo(width, cy);
   ctx.stroke();
 
-  // particle
-  const px = centerX + x * scale;
+  // Particle
+  const px = cx + x * scale;
 
-  ctx.fillStyle = "#6f4c35";
-  ctx.beginPath();
-  ctx.arc(px, centerY, 6, 0, 2 * Math.PI);
-  ctx.fill();
+  if (px >= 0 && px <= width) {
+    ctx.fillStyle = "#6f4c35";
+    ctx.beginPath();
+    ctx.arc(px, cy, 6, 0, 2 * Math.PI);
+    ctx.fill();
+  }
 }
 
 function animate() {
-  step();
+  // Speed-up: multiple physics steps per frame
+  for (let i = 0; i < 5; i++) {
+    step();
+  }
+
   draw();
   requestAnimationFrame(animate);
 }
