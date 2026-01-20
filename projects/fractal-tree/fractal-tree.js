@@ -40,7 +40,7 @@ function draw() {
 }
 
 function tree(r) {
-  if (r < 6) return;
+  if (r < 1) return;
 
   line(0, 0, 0, -r);
   translate(0, -r);
