@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Fractal Tree</title>
+
+  <!-- Your global styles -->
+  <link rel="stylesheet" href="../../style.css">
+
+  <!-- p5.js -->
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.9.3/lib/p5.min.js"></script>
+</head>
+
+<body>
+<main>
+  <h1>Fractal Tree</h1>
+
+  <p class="intro">
+    An interactive fractal tree built with p5.js.  
+    Adjust the branching angle and length to explore different structures.
+  </p>
+
+  <!-- Canvas container -->
+  <div id="canvas-container"></div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <label>
+      Angle
+      <input id="angleSlider" type="range" min="0" max="1.2" step="0.01">
+    </label>
+
+    <label>
+      Length
+      <input id="lengthSlider" type="range" min="0.15" max="0.5" step="0.01">
+    </label>
+  </div>
+</main>
+
+<script src="fractal-tree.js"></script>
+</body>
+</html>
